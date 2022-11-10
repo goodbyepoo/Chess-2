@@ -1,8 +1,5 @@
 chess rules:
-checkmate
-stalemate
 draw by repition
-fix knight movement
 
 chess 2 rules:
 pawn on c4
