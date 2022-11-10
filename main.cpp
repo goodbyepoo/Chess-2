@@ -73,20 +73,20 @@ public:
 		return 12;
 	}
 	void set(int i, int piece) {
+		wPawn &= ~(1LL << i);
+		wRook &= ~(1LL << i);
+		wBishop &= ~(1LL << i);
+		wKnight &= ~(1LL << i);
+		wQueen &= ~(1LL << i);
+		bPawn &= ~(1LL << i);
+		bRook &= ~(1LL << i);
+		bBishop &= ~(1LL << i);
+		bKnight &= ~(1LL << i);
+		bQueen &= ~(1LL << i);
+		bKnook &= ~(1LL << i);
+		bKnook &= ~(1LL << i);
 		switch (piece) {
 		case 12:
-			wPawn &= ~(1LL << i);
-			wRook &= ~(1LL << i);
-			wBishop &= ~(1LL << i);
-			wKnight &= ~(1LL << i);
-			wQueen &= ~(1LL << i);
-			bPawn &= ~(1LL << i);
-			bRook &= ~(1LL << i);
-			bBishop &= ~(1LL << i);
-			bKnight &= ~(1LL << i);
-			bQueen &= ~(1LL << i);
-			bKnook &= ~(1LL << i);
-			bKnook &= ~(1LL << i);
 			break;
 		case 0:
 			wRook ^= 1LL << i;
@@ -602,6 +602,63 @@ bool validateKnightMove(boord board, int move1, int move2) {
 		}
 	}
 	return false;
+}
+bool validateKingMove(boord board, int move1, int move2, bool turn) {
+	if (turn) {
+		if (board.color(move2) == 1) {
+			return false;
+		}
+	}
+	else {
+		if (board.color(move2) == 1) {
+			return false;
+		}
+	}
+	if (move2 < 0 || move2 > 63) {
+		return false;
+	}
+	if (move1 + 1 == move2) {
+		if (move1 % 8 == 7) {
+			return false;
+		}
+		return true;
+	}
+	if (move1 - 1 == move2) {
+		if (move1 % 8 == 0) {
+			return false;
+		}
+		return true;
+	}
+	if (move1 + 7 == move2) {
+		if (move1 % 8 == 0) {
+			return false;
+		}
+		return true;
+	}
+	if (move1 - 7 == move2) {
+		if (move1 % 8 == 7) {
+			return false;
+		}
+		return true;
+	}
+	if (move1 + 9 == move2) {
+		if (move1 % 8 == 7) {
+			return false;
+		}
+		return true;
+	}
+	if (move1 - 9 == move2) {
+		if (move1 % 8 == 0) {
+			return false;
+		}
+		return true;
+	}
+	if (move1 + 8 == move2) {
+		return true;
+	}
+	if (move1 - 8 == move2) {
+		return true;
+	}
 }
 bool inCheck(bool turn, boord board, int kingLocation1, int kingLocation2) {
 	if (turn) {
@@ -1583,23 +1640,7 @@ char validateMove(boord board, int enPassant, bool turn, int move1, int move2) {
 		}
 		else if (board[move1] == 4) {
 			// king
-			if (move1 + 8 == move2 || move1 - 8 == move2) {
-
-			}
-			else if (move1 + 9 == move2 || move1 - 7 == move2 || move1 + 1 == move2) {
-				if (move1 % 8 + 1 != move2 % 8) {
-					return false;
-				}
-			}
-			else if (move1 - 9 == move2 || move1 + 7 == move2 || move1 - 1 == move2) {
-				if (move1 % 8 - 1 != move2 % 8) {
-					return false;
-				}
-			}
-			else {
-				return false;
-			}
-			if (board[move2] < 6) {
+			if (validateKingMove(board, move1, move2, turn) == 0) {
 				return false;
 			}
 		}
@@ -2130,23 +2171,7 @@ char validateMove(boord board, int enPassant, bool turn, int move1, int move2) {
 			}
 		}
 		else if (board[move1] == 10) {
-			if (move1 + 8 == move2 || move1 - 8 == move2) {
-
-			}
-			else if (move1 + 9 == move2 || move1 - 7 == move2 || move1 + 1 == move2) {
-				if (move1 % 8 + 1 != move2 % 8) {
-					return false;
-				}
-			}
-			else if (move1 - 9 == move2 || move1 + 7 == move2 || move1 - 1 == move2) {
-				if (move1 % 8 - 1 != move2 % 8) {
-					return false;
-				}
-			}
-			else {
-				return false;
-			}
-			if (board[move2] > 5 && board[move2] != 12) {
+			if (validateKingMove(board, move1, move2, turn) == 0) {
 				return false;
 			}
 		}
@@ -4321,35 +4346,35 @@ bool hasLegalMoves(boord board, bool turn, int enpassant) {
 			}
 			if (j == 10) {
 				c = validateMove(board, enpassant, turn, i, i + 1);
-				if (c && c != 5) {
+				if (c == 1) {
 					return true;
 				}
 				c = validateMove(board, enpassant, turn, i, i - 1);
-				if (c && c != 5) {
+				if (c == 1) {
 					return true;
 				}
 				c = validateMove(board, enpassant, turn, i, i + 8);
-				if (c && c != 5) {
+				if (c == 1) {
 					return true;
 				}
 				c = validateMove(board, enpassant, turn, i, i - 8);
-				if (c && c != 5) {
+				if (c == 1) {
 					return true;
 				}
 				c = validateMove(board, enpassant, turn, i, i + 7);
-				if (c && c != 5) {
+				if (c == 1) {
 					return true;
 				}
 				c = validateMove(board, enpassant, turn, i, i - 7);
-				if (c && c != 5) {
+				if (c == 1) {
 					return true;
 				}
 				c = validateMove(board, enpassant, turn, i, i + 9);
-				if (c && c != 5) {
+				if (c == 1) {
 					return true;
 				}
 				c = validateMove(board, enpassant, turn, i, i - 9);
-				if (c && c != 5) {
+				if (c == 1) {
 					return true;
 				}
 			}
@@ -4489,6 +4514,10 @@ int main() {
 			gameEnd = true;
 			break;
 		}
+		if (tomato == 100) {
+			gameEnd = true;
+			cout << "Game drawn by 50 move rule";
+		}
 		if (turn) {
 			cout << "White to move: ";
 			cin >> input;
@@ -4524,10 +4553,7 @@ int main() {
 
 		turn = !turn;
 
-		if (tomato == 100) {
-			gameEnd = true;
-			cout << "Game drawn by 50 move rule";
-		}
+
 		auto stop = high_resolution_clock::now();
 		auto duration = duration_cast<microseconds>(stop - start);
 		std::cout << u8"\033[2J\033[1;1H";
