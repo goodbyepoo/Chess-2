@@ -348,6 +348,46 @@ void updateBoard(bool turn, string input, boord(*bord), int moves[2], int enPass
 
 	}
 }
+void updateBoard(bool turn, boord(*bord), int moves[2], int enPassant, int kingLocation[2]) {
+	if (moves[0] - 2 == moves[1] && (*bord)[moves[0]] == 4) {
+
+		bord->set(0, 12);
+		bord->set(2, 0);
+	}
+	else if (moves[0] - 2 == moves[1] && (*bord)[moves[0]] == 10) {
+		bord->set(56, 12);
+		bord->set(58, 0);
+	}
+	else if (moves[0] + 2 == moves[1] && (*bord)[moves[0]] == 4) {
+		bord->set(7, 12);
+		bord->set(4, 0);
+	}
+	else if (moves[0] + 2 == moves[1] && (*bord)[moves[0]] == 10) {
+		bord->set(63, 12);
+		bord->set(60, 0);
+	}
+	bord->move(moves[0], moves[1]);
+
+	if (turn) {
+		if ((*bord)[moves[1]] == 5 && moves[1] - 8 == enPassant) {
+			bord->set(moves[1] - 8, 12);
+		}
+		if ((*bord)[moves[1]] == 4) {
+			kingLocation[0] = moves[1];
+		}
+
+	}
+	else {
+		
+		if ((*bord)[moves[1]] == 11 && moves[1] + 8 == enPassant) {
+			bord->set(moves[1] + 8, 12);
+		}
+		if ((*bord)[moves[1]] == 10) {
+			kingLocation[1] = moves[1];
+		}
+
+	}
+}
 void updateBoard(int* tomato, int* enPassant, boord(*board), int moves[2], bool turn, string input, bool(*castling)[4]) {
 	int(*kingLocation)[2] = &(board->kingLocation);
 	if ((*board)[moves[0]] == 5 || (*board)[moves[0]] == 11) {
@@ -1227,7 +1267,8 @@ bool inCheck(bool turn, boord board, int kingLocation1, int kingLocation2) {
 		}
 	}
 	return false;
-}
+} // fix knights here
+//fix knights here
 void restoreBoard(int& capturedPiece, int move1, int move2, int enPassant, int(*board)[64], bool turn, int promotion = -1) {
 	(*board)[move1] = (*board)[move2];
 	(*board)[move2] = capturedPiece;
@@ -1270,6 +1311,1134 @@ int minimax(boord board, int depth, bool turn, int* enPassant, string input, int
 }
 
 
+//5: in check, 0: illegal, 1:legal
+char validateMove(boord board, int enPassant, bool turn, int move1, int move2) {
+	if (move2 < 0 || move2 > 63) {
+		return false;
+	}
+	int kingLocation[2];
+	kingLocation[0] = board.kingLocation[0];
+	kingLocation[1] = board.kingLocation[1];
+	// castling parameter needed
+	if (turn) {
+		if (board[move1] == 0) {
+			// rooks
+			// vertical
+			bool x = true;
+			if (move1 % 8 == move2 % 8) {
+				for (int i = move1 + 8; true; i += 8) {
+					if (i > 63) {
+						break;
+					}
+					if (board[i] < 6) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+				for (int i = move1 - 8; true; i -= 8) {
+					if (i < 0) {
+						break;
+					}
+					if (board[i] < 6) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+
+			}
+			else {
+				for (int i = move1 + 1; true; i++) {
+					if (i % 8 == 0) {
+						break;
+					}
+					if (board[i] < 6) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						if (i != move2) {
+							break;
+						}
+					}
+
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+				for (int i = move1 - 1; true; i--) {
+					if (i % 8 == 7) {
+						break;
+					}
+					if (board[i] < 6) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+
+			}
+			if (x) {
+				return false;
+			}
+		}
+		else if (board[move1] == 1) {
+			// knight
+			if (move1 + 17 == move2) {
+				if (move1 % 8 != (move2 % 8) - 1) {
+					return false;
+				}
+			}
+			else if (move1 - 15 == move2) {
+				if (move1 % 8 != (move2 % 8) - 1) {
+					return false;
+				}
+			}
+			else if (move1 - 17 == move2) {
+				if (move1 % 8 != (move2 % 8) + 1) {
+					return false;
+				}
+			}
+			else if (move1 + 15 == move2) {
+				if (move1 % 8 != move2 % 8 + 1) {
+					return false;
+				}
+			}
+
+			else if (move1 + 10 == move2) {
+				if (move1 % 8 != move2 % 8 - 2) {
+					return false;
+				}
+			}
+			else if (move1 - 10 == move2) {
+				if (move1 % 8 != move2 % 8 + 2) {
+					return false;
+				}
+			}
+			else if (move1 - 6 == move2) {
+				if (move1 % 8 != move2 % 8 - 2) {
+					return false;
+				}
+			}
+			else if (move1 + 6 == move2) {
+				if (move1 % 8 != move2 % 8 + 2) {
+					return false;
+				}
+			}
+			else {
+				return false;
+			}
+			if (board[move2] < 6) {
+				return false;
+			}
+		}
+		else if (board[move1] == 2) {
+			// bishop
+			bool x = true;
+			if (move1 < move2) {
+				for (int i = move1 + 9; true; i += 9) {
+					if (i > 63 || i % 8 == 0) {
+						break;
+					}
+					if (board[i] < 6) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+				for (int i = move1 + 7; true; i += 7) {
+					if (i > 63 || i % 8 == 7) {
+						break;
+					}
+					if (board[i] < 6) {
+						break;
+					}
+					if (i > 55 || i % 8 == 0 || i % 8 == 7) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+
+			}
+			else {
+				for (int i = move1 - 9; true; i -= 9) {
+					if (i < 0 || i % 8 == 7) {
+						break;
+					}
+					if (board[i] < 6) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+				for (int i = move1 - 7; true; i -= 7) {
+					if (i < 0 || i % 8 == 0) {
+						break;
+					}
+					if (board[i] < 6) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+
+			}
+			if (x) {
+				return false;
+			}
+		}
+		else if (board[move1] == 4) {
+			// king
+			if (move1 + 8 == move2 || move1 - 8 == move2) {
+
+			}
+			else if (move1 + 9 == move2 || move1 - 7 == move2 || move1 + 1 == move2) {
+				if (move1 % 8 + 1 != move2 % 8) {
+					return false;
+				}
+			}
+			else if (move1 - 9 == move2 || move1 + 7 == move2 || move1 - 1 == move2) {
+				if (move1 % 8 - 1 != move2 % 8) {
+					return false;
+				}
+			}
+			else {
+				return false;
+			}
+			if (board[move2] < 6) {
+				return false;
+			}
+		}
+		else if (board[move1] == 3) {
+			// queen
+
+			// rooks
+			// vertical
+			bool x = true;
+			if (move1 % 8 == move2 % 8) {
+				for (int i = move1 + 8; true; i += 8) {
+					if (i > 63) {
+						break;
+					}
+					if (board[i] < 6) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+				for (int i = move1 - 8; true; i -= 8) {
+					if (i < 0) {
+						break;
+					}
+					if (board[i] < 6) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+
+			}
+			else {
+				for (int i = move1 + 1; true; i++) {
+					if (i % 8 == 0) {
+						break;
+					}
+					if (board[i] < 6) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						if (i != move2) {
+							break;
+						}
+					}
+
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+				for (int i = move1 - 1; true; i--) {
+					if (i % 8 == 7) {
+						break;
+					}
+					if (board[i] < 6) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+
+			}
+
+			// bishop
+			if (move1 < move2) {
+				for (int i = move1 + 9; true; i += 9) {
+					if (i > 63 || i % 8 == 0) {
+						break;
+					}
+					if (board[i] < 6) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+				for (int i = move1 + 7; true; i += 7) {
+					if (i > 63 || i % 8 == 7) {
+						break;
+					}
+					if (board[i] < 6) {
+						break;
+					}
+					if (i > 55 || i % 8 == 0 || i % 8 == 7) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+
+			}
+			else {
+				for (int i = move1 - 9; true; i -= 9) {
+					if (i < 0 || i % 8 == 7) {
+						break;
+					}
+					if (board[i] < 6) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+				for (int i = move1 - 7; true; i -= 7) {
+					if (i < 0 || i % 8 == 0) {
+						break;
+					}
+					if (board[i] < 6) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+
+			}
+			if (x) {
+				return false;
+			}
+		}
+		else if (board[move1] == 5) {
+			// pawn
+			if (move1 + 8 == move2) {
+				if (board[move2] != 12) {
+					return false;
+				}
+			}
+			else if (move1 + 16 == move2) {
+				if (board[move2] != 12 || board[move2 - 8] != 12 || !(move1>7 && move1 < 16)) {
+					return false;
+				}
+				// captures
+			}
+			else if (move1 + 9 == move2) {
+				if (move2 - 8 == enPassant) {
+					if (move1 % 8 + 1 != move2 % 8) {
+						return false;
+					}
+				}
+				else if (move1 % 8 + 1 != move2 % 8 || board[move2] < 6) {
+					return false;
+				}
+			}
+			else if (move1 + 7 == move2) {
+				if (move2 - 8 == enPassant) {
+					if (move1 % 8 - 1 != move2 % 8) {
+						return false;
+					}
+				}
+				else if (move1 % 8 - 1 != move2 % 8 || board[move2] < 6) {
+					return false;
+				}
+			}
+			else {
+				return false;
+			}
+		}
+		else if (board[move1] == 13) {
+			while (true) {
+				bool x = true;
+				if (move1 % 8 == move2 % 8) {
+					for (int i = move1 + 8; true; i += 8) {
+						if (i > 63) {
+							break;
+						}
+						if (board[i] < 6) {
+							break;
+						}
+						if (board[i] != 12 && board[i] > 5) {
+							if (i != move2) {
+								break;
+							}
+						}
+						if (i == move2) {
+							x = false;
+							break;
+						}
+					}
+					for (int i = move1 - 8; true; i -= 8) {
+						if (i < 0) {
+							break;
+						}
+						if (board[i] < 6) {
+							break;
+						}
+						if (board[i] != 12 && board[i] > 5) {
+							if (i != move2) {
+								break;
+							}
+						}
+						if (i == move2) {
+							x = false;
+							break;
+						}
+					}
+
+				}
+				else {
+					for (int i = move1 + 1; true; i++) {
+						if (i % 8 == 0) {
+							break;
+						}
+						if (board[i] < 6) {
+							break;
+						}
+						if (board[i] != 12 && board[i] > 5) {
+							if (i != move2) {
+								break;
+							}
+						}
+
+						if (i == move2) {
+							x = false;
+							break;
+						}
+					}
+					for (int i = move1 - 1; true; i--) {
+						if (i % 8 == 7) {
+							break;
+						}
+						if (board[i] < 6) {
+							break;
+						}
+						if (board[i] != 12 && board[i] > 5) {
+							if (i != move2) {
+								break;
+							}
+						}
+						if (i == move2) {
+							x = false;
+							break;
+						}
+					}
+
+				}
+				if (!x) {
+					break;
+				}
+				if (move1 + 17 == move2 || move1 - 15 == move2) {
+					if (move1 % 8 + 1 != move2 % 8) {
+						return false;
+					}
+				}
+				else if (move1 + 10 == move2 || move1 - 6 == move2) {
+					if (move1 % 8 + 2 != move2 % 8) {
+						return false;
+					}
+				}
+				else if (move1 + 15 == move2 || move1 - 17 == move2) {
+					if (move1 % 8 - 1 != move2 % 8) {
+						return false;
+					}
+				}
+				else if (move1 + 5 == move2 || move1 - 10 == move2) {
+					if (move1 % 8 - 2 != move2) {
+						return false;
+					}
+				}
+				else {
+					return false;
+				}
+				if (board[move2] < 6) {
+					return false;
+				}
+				break;
+			}
+		}
+		else {
+			return false;
+		}
+	}
+	else {
+		if (board[move1] == 6) {
+			bool x = true;
+			if (move1 % 8 == move2 % 8) {
+				for (int i = move1 + 8; true; i += 8) {
+					if (i > 63) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						break;
+					}
+					if (board[i] < 6) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+				for (int i = move1 - 8; true; i -= 8) {
+					if (i < 0) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						break;
+					}
+					if (i < 8 && i != move2) {
+						break;
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+
+			}
+			else {
+				for (int i = move1 + 1; true; i++) {
+					if (i % 8 == 0) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						break;
+					}
+					if (board[i] < 6) {
+						if (i != move2) {
+							break;
+						}
+					}
+
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+				for (int i = move1 - 1; true; i--) {
+					if (i % 8 == 7) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						break;
+					}
+					if (board[i] < 6) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+
+			}
+			if (x) {
+				return false;
+			}
+		}
+		else if (board[move1] == 7) {
+			if (move1 + 17 == move2) {
+				if (move1 % 8 != (move2 % 8) - 1) {
+					return false;
+				}
+			}
+			else if (move1 - 15 == move2) {
+				if (move1 % 8 != (move2 % 8) - 1) {
+					return false;
+				}
+			}
+			else if (move1 - 17 == move2) {
+				if (move1 % 8 != (move2 % 8) + 1) {
+					return false;
+				}
+			}
+			else if (move1 + 15 == move2) {
+				if (move1 % 8 != move2 % 8 + 1) {
+					return false;
+				}
+			}
+
+			else if (move1 + 10 == move2) {
+				if (move1 % 8 != move2 % 8 - 2) {
+					return false;
+				}
+			}
+			else if (move1 - 10 == move2) {
+				if (move1 % 8 != move2 % 8 + 2) {
+					return false;
+				}
+			}
+			else if (move1 - 6 == move2) {
+				if (move1 % 8 != move2 % 8 - 2) {
+					return false;
+				}
+			}
+			else if (move1 + 6 == move2) {
+				if (move1 % 8 != move2 % 8 + 2) {
+					return false;
+				}
+			}
+			else {
+				return false;
+			}
+			if (board[move2] > 5 && board[move2] != 12) {
+				return false;
+			}
+		}
+		else if (board[move1] == 8) {
+			bool x = true;
+			if (move1 < move2) {
+				for (int i = move1 + 9; true; i += 9) {
+					if (i > 63 || i % 8 == 0) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						break;
+					}
+					if (board[i] < 6) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+				for (int i = move1 + 7; true; i += 7) {
+					if (i > 63 || i % 8 == 7) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						break;
+					}
+					if (board[i] < 6) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+
+			}
+			else {
+				for (int i = move1 - 9; true; i -= 9) {
+					if (i < 0 || i % 8 == 7) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						break;
+					}
+					if (board[i] < 6) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+				for (int i = move1 - 7; true; i -= 7) {
+					if (i < 0 || i % 8 == 0) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						break;
+					}
+					if (i < 8 || i % 8 == 0 || i % 8 == 7) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (board[i] < 6) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+
+			}
+			if (x) {
+				return false;
+			}
+		}
+		else if (board[move1] == 10) {
+			if (move1 + 8 == move2 || move1 - 8 == move2) {
+
+			}
+			else if (move1 + 9 == move2 || move1 - 7 == move2 || move1 + 1 == move2) {
+				if (move1 % 8 + 1 != move2 % 8) {
+					return false;
+				}
+			}
+			else if (move1 - 9 == move2 || move1 + 7 == move2 || move1 - 1 == move2) {
+				if (move1 % 8 - 1 != move2 % 8) {
+					return false;
+				}
+			}
+			else {
+				return false;
+			}
+			if (board[move2] > 5 && board[move2] != 12) {
+				return false;
+			}
+		}
+		else if (board[move1] == 9) {
+			bool x = true;
+			if (move1 % 8 == move2 % 8) {
+				for (int i = move1 + 8; true; i += 8) {
+					if (i > 63) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						break;
+					}
+					if (board[i] < 6) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+				for (int i = move1 - 8; true; i -= 8) {
+					if (i < 0) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						break;
+					}
+					if (i < 8 && i != move2) {
+						break;
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+
+			}
+			else {
+				for (int i = move1 + 1; true; i++) {
+					if (i % 8 == 0) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						break;
+					}
+					if (board[i] < 6) {
+						if (i != move2) {
+							break;
+						}
+					}
+
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+				for (int i = move1 - 1; true; i--) {
+					if (i % 8 == 7) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						break;
+					}
+					if (board[i] < 6) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+
+			}
+
+			if (move1 < move2) {
+				for (int i = move1 + 9; true; i += 9) {
+					if (i > 63 || i % 8 == 0) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						break;
+					}
+					if (board[i] < 6) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+				for (int i = move1 + 7; true; i += 7) {
+					if (i > 63 || i % 8 == 7) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						break;
+					}
+					if (board[i] < 6) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+
+			}
+			else {
+				for (int i = move1 - 9; true; i -= 9) {
+					if (i < 0 || i % 8 == 7) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						break;
+					}
+					if (board[i] < 6) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+				for (int i = move1 - 7; true; i -= 7) {
+					if (i < 0 || i % 8 == 0) {
+						break;
+					}
+					if (board[i] != 12 && board[i] > 5) {
+						break;
+					}
+					if (i < 8 || i % 8 == 0 || i % 8 == 7) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (board[i] < 6) {
+						if (i != move2) {
+							break;
+						}
+					}
+					if (i == move2) {
+						x = false;
+						break;
+					}
+				}
+
+			}
+			if (x) {
+				return false;
+			}
+		}
+		else if (board[move1] == 11) {
+			// pawn
+			if (move1 - 8 == move2) {
+				if (board[move2] != 12) {
+					return false;
+				}
+			}
+			else if (move1 - 16 == move2) {
+				if (board[move2] != 12 || board[move2 + 8] != 12 || !(move1 > 47 && move1 < 56)) {
+					return false;
+				}
+				// captures
+			}
+			else if (move1 - 9 == move2) {
+				if (move2 + 8 == enPassant) {
+					if (move1 % 8 - 1 != move2 % 8) {
+						return false;
+					}
+				}
+				else if (board[move2] == 12 || move1 % 8 - 1 != move2 % 8 ||
+					board[move2] > 5) {
+					return false;
+				}
+			}
+			else if (move1 - 7 == move2) {
+				if (move2 + 8 == enPassant) {
+					if (move1 % 8 + 1 != move2 % 8) {
+						return false;
+					}
+				}
+				else if (board[move2] == 12 || move1 % 8 + 1 != move2 % 8 ||
+					board[move2] > 5) {
+					return false;
+				}
+			}
+			else {
+				return false;
+			}
+		}
+		else if (board[move1] == 14) {
+			while (true) {
+				bool x = true;
+				if (move1 % 8 == move2 % 8) {
+					for (int i = move1 + 8; true; i += 8) {
+						if (i > 63) {
+							break;
+						}
+						if (board[i] != 12 && board[i] > 5) {
+							break;
+						}
+						if (board[i] < 6) {
+							if (i != move2) {
+								break;
+							}
+						}
+						if (i == move2) {
+							x = false;
+							break;
+						}
+					}
+					for (int i = move1 - 8; true; i -= 8) {
+						if (i < 0) {
+							break;
+						}
+						if (board[i] != 12 && board[i] > 5) {
+							break;
+						}
+						if (i < 8 && i != move2) {
+							break;
+						}
+						if (i == move2) {
+							x = false;
+							break;
+						}
+					}
+
+				}
+				else {
+					for (int i = move1 + 1; true; i++) {
+						if (i % 8 == 0) {
+							break;
+						}
+						if (board[i] != 12 && board[i] > 5) {
+							break;
+						}
+						if (board[i] < 6) {
+							if (i != move2) {
+								break;
+							}
+						}
+
+						if (i == move2) {
+							x = false;
+							break;
+						}
+					}
+					for (int i = move1 - 1; true; i--) {
+						if (i % 8 == 7) {
+							break;
+						}
+						if (board[i] != 12 && board[i] > 5) {
+							break;
+						}
+						if (board[i] < 6) {
+							if (i != move2) {
+								break;
+							}
+						}
+						if (i == move2) {
+							x = false;
+							break;
+						}
+					}
+
+				}
+				if (!x) {
+					break;
+				}
+				if (move1 + 17 == move2 || move1 - 15 == move2) {
+					if (move1 % 8 + 1 != move2 % 8) {
+						return false;
+					}
+				}
+				else if (move1 + 10 == move2 || move1 - 6 == move2) {
+					if (move1 % 8 + 2 != move2 % 8) {
+						return false;
+					}
+				}
+				else if (move1 + 15 == move2 || move1 - 17 == move2) {
+					if (move1 % 8 - 1 != move2 % 8) {
+						return false;
+					}
+				}
+				else if (move1 + 5 == move2 || move1 - 10 == move2) {
+					if (move1 % 8 - 2 != move2) {
+						return false;
+					}
+				}
+				else {
+					return false;
+				}
+				if (board[move2] > 5 && board[move2] != 12) {
+					return false;
+				}
+				break;
+			}
+
+		}
+		else {
+			return false;
+		}
+	}
+	boord bord;
+	bord.wPawn = board.wPawn;
+	bord.wRook = board.wRook;
+	bord.wBishop = board.wBishop;
+	bord.wKnight = board.wKnight;
+	bord.wQueen = board.wQueen;
+	bord.wKnook = board.bKnook;
+	bord.bPawn = board.bPawn;
+	bord.bRook = board.bRook;
+	bord.bBishop = board.bBishop;
+	bord.bKnight = board.bKnight;
+	bord.bQueen = board.bQueen;
+	bord.kingLocation[0] = board.kingLocation[0];
+	bord.kingLocation[1] = board.kingLocation[1];
+	bord.bKnook = board.bKnook;
+	int moves[2] = { move1,move2 };
+	boord(*pbord) = &bord;
+	updateBoard(turn, pbord, moves, enPassant, bord.kingLocation);
+	if (inCheck(turn, board, kingLocation[0], kingLocation[1])) {
+		return 5;
+	}
+	cout << move1 << move2;
+	return true;
+}
 bool validateMove(boord board, string input, int move1, int move2, bool turn, int enPassant, bool castling[4]) {
 	int kingLocation[2];
 	kingLocation[0] = board.kingLocation[0];
@@ -1361,23 +2530,44 @@ bool validateMove(boord board, string input, int move1, int move2, bool turn, in
 		}
 		else if (board[move1] == 1) {
 			// knight
-			if (move1 + 17 == move2 || move1 - 15 == move2) {
-				if (move1 % 8 + 1 != move2 % 8) {
+			if (move1 + 17 == move2) {
+				if (move1 % 8 != (move2 % 8) - 1) {
 					return false;
 				}
 			}
-			else if (move1 + 10 == move2 || move1 - 6 == move2) {
-				if (move1 % 8 + 2 != move2 % 8) {
+			else if (move1 - 15 == move2) {
+				if (move1 % 8 != (move2 % 8) - 1) {
 					return false;
 				}
 			}
-			else if (move1 + 15 == move2 || move1 - 17 == move2) {
-				if (move1 % 8 - 1 != move2 % 8) {
+			else if (move1 - 17 == move2) {
+				if (move1 % 8 != (move2 % 8) + 1) {
 					return false;
 				}
 			}
-			else if (move1 + 5 == move2 || move1 - 10 == move2) {
-				if (move1 % 8 - 2 != move2) {
+			else if (move1 + 15 == move2) {
+				if (move1 % 8 != move2 % 8 + 1) {
+					return false;
+				}
+			}
+
+			else if (move1 + 10 == move2) {
+				if (move1 % 8 != move2 % 8 - 2) {
+					return false;
+				}
+			}
+			else if (move1 - 10 == move2) {
+				if (move1 % 8 != move2 % 8 + 2) {
+					return false;
+				}
+			}
+			else if (move1 - 6 == move2) {
+				if (move1 % 8 != move2 % 8 - 2) {
+					return false;
+				}
+			}
+			else if (move1 + 6 == move2) {
+				if (move1 % 8 != move2 % 8 + 2) {
 					return false;
 				}
 			}
@@ -1801,23 +2991,44 @@ bool validateMove(boord board, string input, int move1, int move2, bool turn, in
 				if (!x) {
 					break;
 				}
-				if (move1 + 17 == move2 || move1 - 15 == move2) {
-					if (move1 % 8 + 1 != move2 % 8) {
+				if (move1 + 17 == move2) {
+					if (move1 % 8 != (move2 % 8) + 1) {
 						return false;
 					}
 				}
-				else if (move1 + 10 == move2 || move1 - 6 == move2) {
-					if (move1 % 8 + 2 != move2 % 8) {
+				else if (move1 - 15 == move2) {
+					if (move1 % 8 != (move2 % 8) + 1) {
 						return false;
 					}
 				}
-				else if (move1 + 15 == move2 || move1 - 17 == move2) {
-					if (move1 % 8 - 1 != move2 % 8) {
+				else if (move1 - 17 == move2) {
+					if (move1 % 8 != (move2 % 8) - 1) {
 						return false;
 					}
 				}
-				else if (move1 + 5 == move2 || move1 - 10 == move2) {
-					if (move1 % 8 - 2 != move2) {
+				else if (move1 + 15 == move2) {
+					if (move1 % 8 != move2 % 8 - 1) {
+						return false;
+					}
+				}
+
+				else if (move1 + 10 == move2) {
+					if (move1 % 8 != move2 % 8 + 2) {
+						return false;
+					}
+				}
+				else if (move1 - 10 == move2) {
+					if (move1 % 8 != move2 % 8 - 2) {
+						return false;
+					}
+				}
+				else if (move1 - 6 == move2) {
+					if (move1 % 8 != move2 % 8 + 2) {
+						return false;
+					}
+				}
+				else if (move1 + 6 == move2) {
+					if (move1 % 8 != move2 % 8 - 2) {
 						return false;
 					}
 				}
@@ -1915,23 +3126,44 @@ bool validateMove(boord board, string input, int move1, int move2, bool turn, in
 			}
 		}
 		else if (board[move1] == 7) {
-			if (move1 + 17 == move2 || move1 - 15 == move2) {
-				if (move1 % 8 + 1 != move2 % 8) {
+			if (move1 + 17 == move2) {
+				if (move1 % 8 != (move2 % 8) - 1) {
 					return false;
 				}
 			}
-			else if (move1 + 10 == move2 || move1 - 6 == move2) {
-				if (move1 % 8 + 2 != move2 % 8) {
+			else if (move1 - 15 == move2) {
+				if (move1 % 8 != (move2 % 8) - 1) {
 					return false;
 				}
 			}
-			else if (move1 + 15 == move2 || move1 - 17 == move2) {
-				if (move1 % 8 - 1 != move2 % 8) {
+			else if (move1 - 17 == move2) {
+				if (move1 % 8 != (move2 % 8) + 1) {
 					return false;
 				}
 			}
-			else if (move1 + 5 == move2 || move1 - 10 == move2) {
-				if (move1 % 8 - 2 != move2) {
+			else if (move1 + 15 == move2) {
+				if (move1 % 8 != move2 % 8 + 1) {
+					return false;
+				}
+			}
+
+			else if (move1 + 10 == move2) {
+				if (move1 % 8 != move2 % 8 - 2) {
+					return false;
+				}
+			}
+			else if (move1 - 10 == move2) {
+				if (move1 % 8 != move2 % 8 + 2) {
+					return false;
+				}
+			}
+			else if (move1 - 6 == move2) {
+				if (move1 % 8 != move2 % 8 - 2) {
+					return false;
+				}
+			}
+			else if (move1 + 6 == move2) {
+				if (move1 % 8 != move2 % 8 + 2) {
 					return false;
 				}
 			}
@@ -2357,23 +3589,44 @@ bool validateMove(boord board, string input, int move1, int move2, bool turn, in
 				if (!x) {
 					break;
 				}
-				if (move1 + 17 == move2 || move1 - 15 == move2) {
-					if (move1 % 8 + 1 != move2 % 8) {
+				if (move1 + 17 == move2) {
+					if (move1 % 8 != (move2 % 8) + 1) {
 						return false;
 					}
 				}
-				else if (move1 + 10 == move2 || move1 - 6 == move2) {
-					if (move1 % 8 + 2 != move2 % 8) {
+				else if (move1 - 15 == move2) {
+					if (move1 % 8 != (move2 % 8) + 1) {
 						return false;
 					}
 				}
-				else if (move1 + 15 == move2 || move1 - 17 == move2) {
-					if (move1 % 8 - 1 != move2 % 8) {
+				else if (move1 - 17 == move2) {
+					if (move1 % 8 != (move2 % 8) - 1) {
 						return false;
 					}
 				}
-				else if (move1 + 5 == move2 || move1 - 10 == move2) {
-					if (move1 % 8 - 2 != move2) {
+				else if (move1 + 15 == move2) {
+					if (move1 % 8 != move2 % 8 - 1) {
+						return false;
+					}
+				}
+
+				else if (move1 + 10 == move2) {
+					if (move1 % 8 != move2 % 8 + 2) {
+						return false;
+					}
+				}
+				else if (move1 - 10 == move2) {
+					if (move1 % 8 != move2 % 8 - 2) {
+						return false;
+					}
+				}
+				else if (move1 - 6 == move2) {
+					if (move1 % 8 != move2 % 8 + 2) {
+						return false;
+					}
+				}
+				else if (move1 + 6 == move2) {
+					if (move1 % 8 != move2 % 8 - 2) {
 						return false;
 					}
 				}
@@ -2415,7 +3668,750 @@ bool validateMove(boord board, string input, int move1, int move2, bool turn, in
 	}
 	return true;
 }
-
+bool hasLegalMoves(boord board, bool turn, int enpassant) {
+	int j = 0;
+	char c = 0;
+	for (int i = 0; i < 64; i++) {
+		j = board[i];
+		if (turn) {
+			if (j == 0) {
+				for (int f = i + 8; true; f += 8) {
+					if (f > 63) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 8; true; f -= 8) {
+					if (f < 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i + 1; true; f += 1) {
+					if (f % 8 == 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 1; true; f -= 1) {
+					if (f % 8 == 7) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+			}
+			if (j == 1) {
+				c = validateMove(board, enpassant, turn, i, i + 17);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 15);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 17);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 15);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 10);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 10);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 6);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 6);
+				if (c && c != 5) {
+					return true;
+				}
+			}
+			if (j == 2) {
+				for (int f = i + 9; true; f += 9) {
+					if (i > 63 || i % 8 == 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 9; true; f -= 9) {
+					if (i < 0 || i % 8 == 7) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i + 7; true; f += 7) {
+					if (i > 63 || i % 8 == 7) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 7; true; f -= 7) {
+					if (i < 0 || i % 8 == 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+			}
+			if (j == 3) {
+				for (int f = i + 8; true; f += 8) {
+					if (f > 63) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 8; true; f -= 8) {
+					if (f < 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i + 1; true; f += 1) {
+					if (f % 8 == 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 1; true; f -= 1) {
+					if (f % 8 == 7) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i + 9; true; f += 9) {
+					if (i > 63 || i % 8 == 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 9; true; f -= 9) {
+					if (i < 0 || i % 8 == 7) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i + 7; true; f += 7) {
+					if (i > 63 || i % 8 == 7) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 7; true; f -= 7) {
+					if (i < 0 || i % 8 == 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+			}
+			if (j == 4) {
+				c = validateMove(board, enpassant, turn, i, i + 1);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 1);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 8);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 8);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 7);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 7);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 9);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 9);
+				if (c && c != 5) {
+					return true;
+				}
+			}
+			if (j == 5) {
+				c = validateMove(board, enpassant, turn, i, i + 8);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 16);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 7);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 9);
+				if (c && c != 5) {
+					return true;
+				}
+			}
+			if (j == 13) {
+				for (int f = i + 8; true; f += 8) {
+					if (f > 63) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 8; true; f -= 8) {
+					if (f < 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i + 1; true; f += 1) {
+					if (f % 8 == 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 1; true; f -= 1) {
+					if (f % 8 == 7) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				c = validateMove(board, enpassant, turn, i, i + 17);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 15);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 17);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 15);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 10);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 10);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 6);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 6);
+				if (c && c != 5) {
+					return true;
+				}
+			}
+		}
+		else {
+			if (j == 6) {
+				for (int f = i + 8; true; f += 8) {
+					if (f > 63) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 8; true; f -= 8) {
+					if (f < 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i + 1; true; f += 1) {
+					if (f % 8 == 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 1; true; f -= 1) {
+					if (f % 8 == 7) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+			}
+			if (j == 7) {
+				c = validateMove(board, enpassant, turn, i, i + 17);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 15);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 17);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 15);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 10);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 10);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 6);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 6);
+				if (c && c != 5) {
+					return true;
+				}
+			}
+			if (j == 8) {
+				for (int f = i + 9; true; f += 9) {
+					if (i > 63 || i % 8 == 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 9; true; f -= 9) {
+					if (i < 0 || i % 8 == 7) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i + 7; true; f += 7) {
+					if (i > 63 || i % 8 == 7) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 7; true; f -= 7) {
+					if (i < 0 || i % 8 == 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+			}
+			if (j == 9) {
+				for (int f = i + 8; true; f += 8) {
+					if (f > 63) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 8; true; f -= 8) {
+					if (f < 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i + 1; true; f += 1) {
+					if (f % 8 == 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 1; true; f -= 1) {
+					if (f % 8 == 7) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i + 9; true; f += 9) {
+					if (i > 63 || i % 8 == 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 9; true; f -= 9) {
+					if (i < 0 || i % 8 == 7) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i + 7; true; f += 7) {
+					if (i > 63 || i % 8 == 7) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 7; true; f -= 7) {
+					if (i < 0 || i % 8 == 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+			}
+			if (j == 10) {
+				c = validateMove(board, enpassant, turn, i, i + 1);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 1);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 8);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 8);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 7);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 7);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 9);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 9);
+				if (c && c != 5) {
+					return true;
+				}
+			}
+			if (j == 11) {
+				c = validateMove(board, enpassant, turn, i, i - 8);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 16);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 7);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 9);
+				if (c && c != 5) {
+					return true;
+				}
+			}
+			if (j == 14) {
+				for (int f = i + 8; true; f += 8) {
+					if (f > 63) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 8; true; f -= 8) {
+					if (f < 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i + 1; true; f += 1) {
+					if (f % 8 == 0) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				for (int f = i - 1; true; f -= 1) {
+					if (f % 8 == 7) {
+						break;
+					}
+					c = validateMove(board, enpassant, turn, i, f);
+					if (c == 1) {
+						return true;
+					}
+					if (c == 0) {
+						break;
+					}
+				}
+				c = validateMove(board, enpassant, turn, i, i + 17);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 15);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 17);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 15);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 10);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 10);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i - 6);
+				if (c && c != 5) {
+					return true;
+				}
+				c = validateMove(board, enpassant, turn, i, i + 6);
+				if (c && c != 5) {
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
 
 int main() {
 	boord board;
@@ -2432,6 +4428,21 @@ int main() {
 	bool castling[4] = { true, true, true, true };
 	//white kingside, white queenside, black kingside, black queenside
 	while (!gameEnd) {
+		if (!hasLegalMoves(board, turn, enPassant)) {
+			if (inCheck(turn, board, board.kingLocation[0], board.kingLocation[1])) {
+				if (turn) {
+					cout << "Black wins by checkmate";
+				}
+				else {
+					cout << "White wins by checkmate";
+				}
+			}
+			else {
+				cout << "Draw by stalemate";
+			}
+			gameEnd = true;
+			break;
+		}
 		printBoard(board);
 		if (turn) {
 			cout << "White to move: ";
