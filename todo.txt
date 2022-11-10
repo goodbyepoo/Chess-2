@@ -1,0 +1,10 @@
+chess rules:
+checkmate
+stalemate
+draw by repition
+
+chess 2 rules:
+pawn on c4
+king c2
+en passant forced
+double check win
