@@ -501,8 +501,110 @@ void updateBoard(int* tomato, int* enPassant, boord(*board), int moves[2], bool 
 
 }
 
-bool inCheck(bool turn, boord board, int kingLocation1, int kingLocation2) {
+bool validateKnightMove(boord board, int move1, int move2) {
+	if (board[move1] == 1) {
+		// knight
+		if (move1 + 17 == move2) {
+			if (move1 % 8 != (move2 % 8) - 1) {
+				return false;
+			}
+		}
+		else if (move1 - 15 == move2) {
+			if (move1 % 8 != (move2 % 8) - 1) {
+				return false;
+			}
+		}
+		else if (move1 - 17 == move2) {
+			if (move1 % 8 != (move2 % 8) + 1) {
+				return false;
+			}
+		}
+		else if (move1 + 15 == move2) {
+			if (move1 % 8 != move2 % 8 + 1) {
+				return false;
+			}
+		}
 
+		else if (move1 + 10 == move2) {
+			if (move1 % 8 != move2 % 8 - 2) {
+				return false;
+			}
+		}
+		else if (move1 - 10 == move2) {
+			if (move1 % 8 != move2 % 8 + 2) {
+				return false;
+			}
+		}
+		else if (move1 - 6 == move2) {
+			if (move1 % 8 != move2 % 8 - 2) {
+				return false;
+			}
+		}
+		else if (move1 + 6 == move2) {
+			if (move1 % 8 != move2 % 8 + 2) {
+				return false;
+			}
+		}
+		else {
+			return false;
+		}
+		if (board[move2] < 6) {
+			return false;
+		}
+	}
+	else if (board[move1] == 7) {
+		if (move1 + 17 == move2) {
+			if (move1 % 8 != (move2 % 8) - 1) {
+				return false;
+			}
+		}
+		else if (move1 - 15 == move2) {
+			if (move1 % 8 != (move2 % 8) - 1) {
+				return false;
+			}
+		}
+		else if (move1 - 17 == move2) {
+			if (move1 % 8 != (move2 % 8) + 1) {
+				return false;
+			}
+		}
+		else if (move1 + 15 == move2) {
+			if (move1 % 8 != move2 % 8 + 1) {
+				return false;
+			}
+		}
+
+		else if (move1 + 10 == move2) {
+			if (move1 % 8 != move2 % 8 - 2) {
+				return false;
+			}
+		}
+		else if (move1 - 10 == move2) {
+			if (move1 % 8 != move2 % 8 + 2) {
+				return false;
+			}
+		}
+		else if (move1 - 6 == move2) {
+			if (move1 % 8 != move2 % 8 - 2) {
+				return false;
+			}
+		}
+		else if (move1 + 6 == move2) {
+			if (move1 % 8 != move2 % 8 + 2) {
+				return false;
+			}
+		}
+		else {
+			return false;
+		}
+		if (board[move2] > 5 && board[move2] != 12) {
+			return false;
+		}
+	}
+	return false;
+}
+bool inCheck(bool turn, boord board, int kingLocation1, int kingLocation2) {
+	int c;
 	if (turn) {
 		int move2 = kingLocation1;
 		if (board[move2 + 9] == 11 || board[move2 + 7] == 11) {
@@ -587,30 +689,7 @@ bool inCheck(bool turn, boord board, int kingLocation1, int kingLocation2) {
 				}
 			}
 			else if (board[move1] == 7) {
-				if (move1 + 17 == move2 || move1 - 15 == move2) {
-					if (move1 % 8 + 1 != move2 % 8) {
-
-					}
-					return true;
-				}
-				else if (move1 + 10 == move2 || move1 - 6 == move2) {
-					if (move1 % 8 + 2 != move2 % 8) {
-
-					}
-					return true;
-				}
-				else if (move1 + 15 == move2 || move1 - 17 == move2) {
-					if (move1 % 8 - 1 != move2 % 8) {
-
-					}
-					return true;
-				}
-				else if (move1 + 5 == move2 || move1 - 10 == move2) {
-					if (move1 % 8 - 2 != move2) {
-
-					}
-					return true;
-				}
+				validateKnightMove(board, move1, move2);
 			}
 			else if (board[move1] == 8) {
 
@@ -960,39 +1039,7 @@ bool inCheck(bool turn, boord board, int kingLocation1, int kingLocation2) {
 				}
 			}
 			else if (board[move1] == 1) {
-				// knight
-				if (move1 + 17 == move2 || move1 - 15 == move2) {
-					if (move1 % 8 + 1 != move2 % 8) {
-
-					}
-					else {
-						return true;
-					}
-				}
-				else if (move1 + 10 == move2 || move1 - 6 == move2) {
-					if (move1 % 8 + 2 != move2 % 8) {
-
-					}
-					else {
-						return true;
-					}
-				}
-				else if (move1 + 15 == move2 || move1 - 17 == move2) {
-					if (move1 % 8 - 1 != move2 % 8) {
-
-					}
-					else {
-						return true;
-					}
-				}
-				else if (move1 + 5 == move2 || move1 - 10 == move2) {
-					if (move1 % 8 - 2 != move2) {
-
-					}
-					else {
-						return true;
-					}
-				}
+				validateKnightMove(board, move1, move2);
 			}
 			else if (board[move1] == 2) {
 				// bishop
@@ -1312,6 +1359,7 @@ int minimax(boord board, int depth, bool turn, int* enPassant, string input, int
 
 
 //5: in check, 0: illegal, 1:legal
+
 char validateMove(boord board, int enPassant, bool turn, int move1, int move2) {
 	if (move2 < 0 || move2 > 63) {
 		return false;
