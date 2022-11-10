@@ -604,7 +604,6 @@ bool validateKnightMove(boord board, int move1, int move2) {
 	return false;
 }
 bool inCheck(bool turn, boord board, int kingLocation1, int kingLocation2) {
-	int c;
 	if (turn) {
 		int move2 = kingLocation1;
 		if (board[move2 + 9] == 11 || board[move2 + 7] == 11) {
@@ -1314,8 +1313,7 @@ bool inCheck(bool turn, boord board, int kingLocation1, int kingLocation2) {
 		}
 	}
 	return false;
-} // fix knights here
-//fix knights here
+} 
 void restoreBoard(int& capturedPiece, int move1, int move2, int enPassant, int(*board)[64], bool turn, int promotion = -1) {
 	(*board)[move1] = (*board)[move2];
 	(*board)[move2] = capturedPiece;
@@ -2484,7 +2482,6 @@ char validateMove(boord board, int enPassant, bool turn, int move1, int move2) {
 	if (inCheck(turn, board, kingLocation[0], kingLocation[1])) {
 		return 5;
 	}
-	cout << move1 << move2;
 	return true;
 }
 bool validateMove(boord board, string input, int move1, int move2, bool turn, int enPassant, bool castling[4]) {
@@ -4476,6 +4473,7 @@ int main() {
 	bool castling[4] = { true, true, true, true };
 	//white kingside, white queenside, black kingside, black queenside
 	while (!gameEnd) {
+		printBoard(board);
 		if (!hasLegalMoves(board, turn, enPassant)) {
 			if (inCheck(turn, board, board.kingLocation[0], board.kingLocation[1])) {
 				if (turn) {
@@ -4491,7 +4489,6 @@ int main() {
 			gameEnd = true;
 			break;
 		}
-		printBoard(board);
 		if (turn) {
 			cout << "White to move: ";
 			cin >> input;
