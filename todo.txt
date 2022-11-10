@@ -8,3 +8,7 @@ pawn on c4
 king c2
 en passant forced
 double check win
+
+other:
+remove chrono when done
+clear console after every input
